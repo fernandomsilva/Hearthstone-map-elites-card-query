@@ -1,0 +1,141 @@
+<head>
+	<script type="text/javascript" language="javascript" src="jquery-3.3.1.min.js"></script>        
+
+	<script type="text/javascript">
+		var database;
+		$(document).ready(function(e) {
+			$('.query').prop('disabled', true);
+			
+			$.getJSON( "deck_card_db.json", function( data){
+				database = data;
+				$('.query').prop('disabled', false);
+			});			
+		});
+	</script>
+	
+	<style>
+		table {
+		  font-family: arial, sans-serif;
+		  border-collapse: collapse;
+		  width: 100%;
+		}
+
+		td, th {
+		  border: 1px solid #dddddd;
+		  text-align: left;
+		  padding: 8px;
+		}
+
+		tr:nth-child(even) {
+		  background-color: #dddddd;
+		}
+	</style>
+</head>
+<body>
+	Cards (multiple cards separated by commas): <input type="text" name="cards" class="txtcards" value="Knife Juggler"><br>
+	<button name="btn_query" onclick="queryCards()" class="query">Submit</button>
+	
+	<p>
+	<p id="query_title"><b>Results for query: EMPTY</b></p>
+	<p>
+
+	<table>
+		<tr>
+			<th>Deck</th>
+			<th>Exp1</th>
+			<th>Exp2</th>
+			<th>Nerf</th>
+		</tr>
+		<tr>
+			<th>Hunter Aggro</th>
+			<th id="Hunter_Aggro_Exp1">0%</th>
+			<th id="Hunter_Aggro_Exp2">0%</th>
+			<th id="Hunter_Aggro_Nerfed">0%</th>
+		</tr>
+		<tr>
+			<th>Hunter Control</th>
+			<th id="Hunter_Control_Exp1">0%</th>
+			<th id="Hunter_Control_Exp2">0%</th>
+			<th id="Hunter_Control_Nerfed">0%</th>
+		</tr>
+		<tr>
+			<th>Paladin Aggro</th>
+			<th id="Paladin_Aggro_Exp1">0%</th>
+			<th id="Paladin_Aggro_Exp2">0%</th>
+			<th id="Paladin_Aggro_Nerfed">0%</th>
+		</tr>
+		<tr>
+			<th>Paladin Control</th>
+			<th id="Paladin_Control_Exp1">0%</th>
+			<th id="Paladin_Control_Exp2">0%</th>
+			<th id="Paladin_Control_Nerfed">0%</th>
+		</tr>
+		<tr>
+			<th>Warlock Aggro</th>
+			<th id="Warlock_Aggro_Exp1">0%</th>
+			<th id="Warlock_Aggro_Exp2">0%</th>
+			<th id="Warlock_Aggro_Nerfed">0%</th>
+		</tr>
+		<tr>
+			<th>Warlock Control</th>
+			<th id="Warlock_Control_Exp1">0%</th>
+			<th id="Warlock_Control_Exp2">0%</th>
+			<th id="Warlock_Control_Nerfed">0%</th>
+		</tr>
+	</table>
+
+	<script>
+		function queryCards() {
+			//console.log(database['Hunter Aggro']['ExpSet1_deck_count']);
+			var query_string = $('.txtcards').val();
+			var result = {'Hunter Aggro': {'Exp1': 0, 'Exp2': 0, 'Nerfed': 0}, 'Hunter Control': {'Exp1': 0, 'Exp2': 0, 'Nerfed': 0}, 'Paladin Aggro': {'Exp1': 0, 'Exp2': 0, 'Nerfed': 0}, 'Paladin Control': {'Exp1': 0, 'Exp2': 0, 'Nerfed': 0}, 'Warlock Aggro': {'Exp1': 0, 'Exp2': 0, 'Nerfed': 0}, 'Warlock Control': {'Exp1': 0, 'Exp2': 0, 'Nerfed': 0}};
+			var database_keys = Object.keys(database);
+			var experiment_keys = Object.keys(database[database_keys[0]]);
+			var card_keys;
+			var experiment = '';
+			
+			for (var i=0; i<database_keys.length; i++)
+			{
+				for (var j=0; j<experiment_keys.length; j++)
+				{
+					if (experiment_keys[j].includes('deck_list'))
+					{
+						card_keys = Object.keys(database[database_keys[i]][experiment_keys[j]]);
+						
+						if (experiment_keys[j].includes('1')) { experiment = 'Exp1'; }
+						else if (experiment_keys[j].includes('2')) { experiment = 'Exp2'; }
+						else { experiment = 'Nerfed'; }
+						
+						//console.log(card_keys.includes(query_string));
+						if (card_keys.includes(query_string))
+						{
+							var apperances = database[database_keys[i]][experiment_keys[j]][query_string].length;
+							var total = database[database_keys[i]][experiment_keys[j].substring(0, experiment_keys[j].length-14) + "deck_count"]
+							
+							result[database_keys[i]][experiment] = apperances / total;
+						}
+						else
+						{
+							result[database_keys[i]][experiment] = 0.0;
+						}
+					}
+				}
+			}
+			
+			var result_keys = Object.keys(result);
+			var result_experiment_keys = Object.keys(result[result_keys[0]]);
+			var class_name = '';
+			
+			for (var i=0; i<result_keys.length; i++)
+			{
+				for (var j=0; j<result_experiment_keys.length; j++)
+				{
+					class_name = result_keys[i].replace(' ', '_') + '_' + result_experiment_keys[j];
+					
+					document.getElementById("query_title").innerHTML = "<b>Results for query: " + $('.txtcards').val() + "</b>";
+					document.getElementById(class_name).innerHTML = String(Math.round(result[result_keys[i]][result_experiment_keys[j]] * 1000) / 10.0) + '%';
+				}
+			}
+		}
+	</script>
+</body>
