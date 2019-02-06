@@ -32,7 +32,7 @@
 	</style>
 </head>
 <body>
-	Cards (multiple cards separated by commas): <input type="text" name="cards" class="txtcards" value="Knife Juggler"><br>
+	Cards: <input type="text" name="cards" class="txtcards" value="Knife Juggler"><br>
 	<button name="btn_query" onclick="queryCards()" class="query">Submit</button>
 	
 	<p>
@@ -85,9 +85,22 @@
 	</table>
 
 	<script>
+		function titleCase(str) {
+			var splitStr = str.toLowerCase().split(' ');
+			for (var i = 0; i < splitStr.length; i++) {
+			   splitStr[i] = splitStr[i].charAt(0).toUpperCase() + splitStr[i].substring(1);     
+			}
+			return splitStr.join(' '); 
+		}
+		$(document).on('keypress', function( event ) {
+			if (event.which == 13)
+			{
+				queryCards();
+			}
+		});
 		function queryCards() {
 			//console.log(database['Hunter Aggro']['ExpSet1_deck_count']);
-			var query_string = $('.txtcards').val();
+			var query_string = titleCase($('.txtcards').val());
 			var result = {'Hunter Aggro': {'Exp1': 0, 'Exp2': 0, 'Nerfed': 0}, 'Hunter Control': {'Exp1': 0, 'Exp2': 0, 'Nerfed': 0}, 'Paladin Aggro': {'Exp1': 0, 'Exp2': 0, 'Nerfed': 0}, 'Paladin Control': {'Exp1': 0, 'Exp2': 0, 'Nerfed': 0}, 'Warlock Aggro': {'Exp1': 0, 'Exp2': 0, 'Nerfed': 0}, 'Warlock Control': {'Exp1': 0, 'Exp2': 0, 'Nerfed': 0}};
 			var database_keys = Object.keys(database);
 			var experiment_keys = Object.keys(database[database_keys[0]]);
@@ -132,7 +145,7 @@
 				{
 					class_name = result_keys[i].replace(' ', '_') + '_' + result_experiment_keys[j];
 					
-					document.getElementById("query_title").innerHTML = "<b>Results for query: " + $('.txtcards').val() + "</b>";
+					document.getElementById("query_title").innerHTML = "<b>Results for query: " + titleCase($('.txtcards').val()) + "</b>";
 					document.getElementById(class_name).innerHTML = String(Math.round(result[result_keys[i]][result_experiment_keys[j]] * 1000) / 10.0) + '%';
 				}
 			}
